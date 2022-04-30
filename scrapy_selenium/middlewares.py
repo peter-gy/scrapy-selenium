@@ -14,7 +14,7 @@ class SeleniumMiddleware:
     """Scrapy middleware handling the requests using selenium"""
 
     def __init__(self, driver_name, driver_executable_path,
-                 browser_executable_path, command_executor, driver_arguments):
+                 browser_executable_path, command_executor, driver_arguments, download_timeout):
         """Initialize the selenium webdriver
 
         Parameters
@@ -64,6 +64,7 @@ class SeleniumMiddleware:
             capabilities = driver_options.to_capabilities()
             self.driver = webdriver.Remote(command_executor=command_executor,
                                            desired_capabilities=capabilities)
+        self.driver.set_page_load_timeout(download_timeout)
 
     @classmethod
     def from_crawler(cls, crawler):
@@ -74,6 +75,7 @@ class SeleniumMiddleware:
         browser_executable_path = crawler.settings.get('SELENIUM_BROWSER_EXECUTABLE_PATH')
         command_executor = crawler.settings.get('SELENIUM_COMMAND_EXECUTOR')
         driver_arguments = crawler.settings.get('SELENIUM_DRIVER_ARGUMENTS')
+        download_timeout = crawler.settings.get('DOWNLOAD_TIMEOUT')
 
         if driver_name is None:
             raise NotConfigured('SELENIUM_DRIVER_NAME must be set')
@@ -87,7 +89,8 @@ class SeleniumMiddleware:
             driver_executable_path=driver_executable_path,
             browser_executable_path=browser_executable_path,
             command_executor=command_executor,
-            driver_arguments=driver_arguments
+            driver_arguments=driver_arguments,
+            download_timeout=download_timeout,
         )
 
         crawler.signals.connect(middleware.spider_closed, signals.spider_closed)
